@@ -1,0 +1,418 @@
+<title>Révision DEAES Bloc 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Lexend:wght@400;600&display=swap">
+<style>
+/* Layout : accueil en tuiles d'activités courtes, puis une seule question à l'écran. Texte large et aéré, pensé pour une lectrice dys. */
+:root{
+  --bg:#f5f6fa; --paper:#ffffff; --ink:#22283a; --muted:#5a6280; --line:#dadfeb;
+  --bic:#2a48b5; --hl-green:#c6f1b0; --hl-orange:#ffd9a6; --star:#e8a317;
+  --ok:#1b7443; --ko:#a8301f; --ok-bg:#e2f5e8; --ko-bg:#fbe8e4;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Lexend","Verdana","Segoe UI",system-ui,sans-serif;
+  --fs:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151d; --paper:#1b202c; --ink:#e8ebf4; --muted:#a6aec5; --line:#2f3648;
+  --bic:#98adff; --hl-green:#2e5629; --hl-orange:#68481c; --star:#f2bd45;
+  --ok:#82d8a4; --ko:#ff9f95; --ok-bg:#183225; --ko-bg:#3b201d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151d; --paper:#1b202c; --ink:#e8ebf4; --muted:#a6aec5; --line:#2f3648;
+  --bic:#98adff; --hl-green:#2e5629; --hl-orange:#68481c; --star:#f2bd45;
+  --ok:#82d8a4; --ko:#ff9f95; --ok-bg:#183225; --ko-bg:#3b201d; color-scheme:dark}
+:root.big{--fs:21px}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs);line-height:1.7;letter-spacing:.015em;word-spacing:.08em;padding-inline:16px;padding-block:0 56px}
+.wrap{max-width:760px;margin:0 auto}
+header{padding-block:24px 8px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end}
+.eyebrow{font-size:.75em;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,6vw,2.5rem);line-height:1.1;margin:.15em 0 0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:800;font-size:1.45em;line-height:1.2;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:1.1em;margin:0}
+p{margin:0}
+.hl{background:linear-gradient(transparent 50%,var(--hl-green) 50%);padding-inline:3px}
+.hlo{background:linear-gradient(transparent 50%,var(--hl-orange) 50%);padding-inline:3px}
+.muted{color:var(--muted)}
+.stars{font-family:var(--display);font-weight:800;font-size:1.1em;color:var(--star);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+button{font-family:var(--body);font-size:1em;letter-spacing:inherit;cursor:pointer;color:inherit}
+.small{font-size:.8em;font-weight:600;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.small[aria-pressed="true"]{border-color:var(--bic);color:var(--bic)}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--bic);outline-offset:2px}
+
+/* Accueil */
+.intro{padding-block:4px 20px;max-width:58ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start}
+.tile:hover{border-color:var(--bic)}
+.tile .meta{display:flex;justify-content:space-between;gap:8px;font-size:.78em;color:var(--muted);font-weight:600}
+.tile .meta .stars{font-size:1.1em}
+.tile p{font-size:.88em;color:var(--muted)}
+
+/* Activité */
+.act{display:grid;gap:16px;padding-block:8px}
+.back{justify-self:start;background:none;border:0;color:var(--bic);font-weight:600;padding:8px 0}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--bic);border-radius:99px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:16px}
+.qt{font-size:1.12em;font-weight:600;max-width:52ch}
+.ctx{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:8px}
+.ctxt{max-width:58ch}
+.qhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.say{flex:none;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.78em;font-weight:600;color:var(--bic)}
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px 14px;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--bic)}
+.opt:disabled{cursor:default}
+.opt.good{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opt.bad{background:var(--ko-bg);border-color:var(--ko);color:var(--ko)}
+.fb{border-radius:10px;padding:12px 14px;font-size:.92em}
+.fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.ko{background:var(--ko-bg);color:var(--ko)}
+.go{justify-self:start;background:var(--bic);color:var(--paper);border:0;border-radius:10px;padding:12px 20px;font-weight:600}
+.ghost{background:transparent;color:var(--bic);border:2px solid var(--bic);border-radius:10px;padding:10px 18px;font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.big-score{font-family:var(--display);font-weight:800;font-size:2.4em;line-height:1}
+.end-stars{font-size:2em;color:var(--star);letter-spacing:.1em}
+ul.clean{margin:0;padding-left:1.1em;display:grid;gap:4px}
+@media (max-width:480px){.opts.two{grid-template-columns:1fr}}
+
+/* Relier */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:10px;align-content:start;min-width:0}
+.mt{text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.9em;line-height:1.4}
+.mt.sel{border-color:var(--bic);background:var(--paper);box-shadow:0 0 0 2px var(--bic)}
+.mt.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);cursor:default}
+.mt.wrong{border-color:var(--ko);background:var(--ko-bg)}
+
+/* Puzzle */
+.pieces{display:grid;gap:10px}
+.piece{text-align:left;background:var(--bg);border:2px dashed var(--line);border-radius:12px;padding:12px 14px;line-height:1.45}
+.built{display:grid;gap:8px;counter-reset:n}
+.built .placed{border:2px solid var(--ok);background:var(--ok-bg);border-radius:12px;padding:10px 14px;line-height:1.45;display:grid;gap:2px}
+.placed .lbl{font-size:.72em;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.formula{display:flex;flex-wrap:wrap;gap:6px;font-size:.8em;font-weight:600}
+.formula span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+
+/* Flashcard */
+.flash{min-height:200px;text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:10px;align-content:center}
+.flash .term{font-family:var(--display);font-weight:800;font-size:1.5em;line-height:1.2}
+.flash.open{border-color:var(--bic)}
+
+/* Défi */
+textarea{width:100%;min-height:90px;font:1em/1.6 var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+.field{display:grid;gap:6px}
+.field label{font-weight:600}
+.timer{font-family:var(--display);font-weight:800;font-size:1.6em;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:600;font-size:.9em}
+.chip[aria-pressed="true"]{border-color:var(--bic);color:var(--bic)}
+@media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s}.opt,.mt{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">DEAES · Bloc 1 · Le cas de Paul</div>
+    <h1>Réviser <span class="hl">en jouant</span></h1>
+  </div>
+  <div class="tools">
+    <span class="stars" id="totalStars" aria-live="polite"></span>
+    <button class="small" id="bigText" aria-pressed="false">Texte plus grand</button>
+  </div>
+</header>
+
+<main id="home">
+  <p class="intro muted">Huit petits jeux de 2 à 5 minutes. Commence par « Je lis le sujet ». Une seule question à la fois. Fais-les dans l'ordre que tu veux et gagne jusqu'à <span class="hlo">3 étoiles</span> par jeu.</p>
+  <div class="grid" id="tiles"></div>
+</main>
+
+<main id="stage" hidden></main>
+</div>
+
+<script>
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+const canSpeak='speechSynthesis' in window;
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';u.rate=.92;speechSynthesis.speak(u)}catch(e){}}
+function sayBtn(){return canSpeak?'<button class="say" data-say>Écouter</button>':''}
+function wireSay(root){root.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>{const t=b.closest('.card').querySelector('.qt,.term');speak(t?t.textContent:'')}))}
+
+/* Texte plus grand */
+const bt=document.getElementById('bigText');
+function setBig(on){document.documentElement.classList.toggle('big',on);bt.setAttribute('aria-pressed',on);store.set('deaes2-big',on)}
+bt.addEventListener('click',()=>setBig(bt.getAttribute('aria-pressed')!=='true'));setBig(store.get('deaes2-big',false));
+
+/* Étoiles */
+function starsFor(r){return r>=.9?3:r>=.6?2:1}
+function getStars(){return store.get('deaes2-stars',{})}
+function saveStars(id,n){const s=getStars();if(!s[id]||n>s[id]){s[id]=n;store.set('deaes2-stars',s)}}
+function starStr(n){return '★'.repeat(n)+'☆'.repeat(3-n)}
+
+/* ========== DONNÉES ========== */
+const CATS=["Scolarité","Liens sociaux","Hygiène et tenue","Alimentation","Sommeil","Écrans","Famille","Point d'appui"];
+const INDICES=[
+ {q:"Paul arrive souvent en retard le matin au lycée.",ok:["Sommeil","Scolarité"],e:"Il se couche tard, donc il a du mal à se lever. C'est d'abord une question de rythme."},
+ {q:"Il ne fait pas ses devoirs et regarde son téléphone en cours.",ok:["Scolarité"],e:"Il se désinvestit de l'école. Sa mère a peur du décrochage."},
+ {q:"Il est fatigué et n'arrive pas à se concentrer.",ok:["Sommeil"],e:"C'est la conséquence des nuits passées à jouer."},
+ {q:"Il n'a pas d'ami parmi les jeunes du groupe.",ok:["Liens sociaux"],e:"Son besoin d'appartenir à un groupe n'est pas satisfait."},
+ {q:"Il évite les adultes : « je n'ai pas besoin de vous ».",ok:["Liens sociaux"],e:"La relation de confiance avec l'équipe est à construire, doucement."},
+ {q:"Il joue de plus en plus aux jeux vidéo, seul dans sa chambre.",ok:["Écrans","Liens sociaux"],e:"Les écrans prennent beaucoup de place et favorisent le repli."},
+ {q:"Il oublie l'heure des repas et picore.",ok:["Alimentation"],e:"Ses repas ne sont pas réguliers ni équilibrés."},
+ {q:"Il ne parle pas pendant les repas, sauf si on lui pose une question.",ok:["Liens sociaux"],e:"Il répond quand on le sollicite : c'est une porte d'entrée pour l'AES."},
+ {q:"Il a des problèmes d'hygiène corporelle.",ok:["Hygiène et tenue"],e:"Besoin d'être propre. Risque d'être rejeté par les autres."},
+ {q:"Ses vêtements sont sales et abîmés.",ok:["Hygiène et tenue"],e:"Besoin de se vêtir. Piste : lui apprendre à entretenir son linge."},
+ {q:"Il mange des chips et boit des sodas dans sa chambre.",ok:["Alimentation"],e:"Alimentation déséquilibrée, et nourriture stockée en chambre : problème d'hygiène."},
+ {q:"Le surveillant de nuit dit qu'il joue tard la nuit.",ok:["Sommeil","Écrans"],e:"Cette information vient d'un collègue : c'est l'intérêt des transmissions."},
+ {q:"Sa mère était débordée et n'arrivait plus à poser l'autorité.",ok:["Famille"],e:"C'est pour cette raison que le placement a été demandé."},
+ {q:"Il rentre chez sa mère tous les week-ends.",ok:["Famille","Point d'appui"],e:"Le lien familial est gardé : c'est une ressource à soutenir."},
+ {q:"Il va seul au lycée en métro.",ok:["Point d'appui"],e:"Il est autonome dans ses déplacements. Pense toujours aux capacités, pas seulement aux difficultés."},
+ {q:"Au collège, c'était un élève sérieux.",ok:["Point d'appui","Scolarité"],e:"Il a des capacités scolaires : la difficulté est récente."}
+];
+const VF=[
+ {q:"L'épreuve écrite du bloc 1 dure 2 heures.",ok:"Vrai",e:"Oui, 2 heures, coefficient 2."},
+ {q:"Je peux écrire le nom de mon lieu de stage.",ok:"Faux",e:"Non ! C'est une rupture d'anonymat : 0/20. On écrit « la structure où j'ai fait mon stage »."},
+ {q:"Le brouillon est corrigé.",ok:"Faux",e:"Non, le brouillon n'est jamais corrigé."},
+ {q:"L'introduction commence par une définition.",ok:"Vrai",e:"Oui, une définition qui explique le sujet."},
+ {q:"Une copie avec seulement des exemples de stage suffit.",ok:"Faux",e:"Il faut de la théorie ET des exemples de pratique."},
+ {q:"Je peux souligner au stylo vert.",ok:"Faux",e:"Seulement noir ou bleu."},
+ {q:"Le placement administratif est décidé par le juge des enfants.",ok:"Faux",e:"Non. Il se fait avec l'accord du parent, via l'Aide sociale à l'enfance. Le placement judiciaire, lui, est décidé par le juge."},
+ {q:"L'AES peut dire que Paul est dépressif.",ok:"Faux",e:"Non, l'AES ne pose pas de diagnostic. Il observe et transmet à la psychologue."},
+ {q:"Les transmissions servent à la continuité de l'accompagnement.",ok:"Vrai",e:"Oui : jour, nuit, entre collègues, toute l'équipe a les mêmes informations."},
+ {q:"Autonomie et indépendance, c'est la même chose.",ok:"Faux",e:"Autonomie = faire ses choix. Indépendance = faire seul les gestes du quotidien."},
+ {q:"Aller seul au lycée en métro est un point d'appui pour Paul.",ok:"Vrai",e:"Oui, c'est une capacité à valoriser."},
+ {q:"La conclusion se termine par une ouverture.",ok:"Vrai",e:"Oui : ton avis, puis une piste plus large."}
+];
+const GESTES=[
+ {q:"Paul n'est pas venu dîner. Il joue dans sa chambre.",o:["Je lui prends sa console devant le groupe.","Je frappe, je lui rappelle l'heure du repas et je lui propose de venir avec moi.","Je le laisse, il viendra s'il a faim."],ok:1,e:"On respecte son intimité et on garde le cadre, sans l'humilier."},
+ {q:"Ses vêtements sont tachés.",o:["Je le lui dis devant les autres jeunes.","Je lave ses vêtements à sa place sans rien dire.","Je lui en parle en privé et je propose de lui montrer le lave-linge."],ok:2,e:"Discrétion + apprentissage = autonomie et respect de son image."},
+ {q:"Le surveillant de nuit te dit que Paul joue jusqu'à 2 h du matin.",o:["Je l'écris dans le cahier de liaison et j'en parle en réunion d'équipe.","Je garde l'information pour moi.","J'appelle sa mère pour qu'elle le punisse."],ok:0,e:"On transmet à l'équipe. Les décisions se prennent ensemble."},
+ {q:"Paul te parle enfin d'un jeu vidéo qu'il aime.",o:["Je lui dis que les jeux vidéo, c'est mauvais.","Je m'intéresse et je lui pose des questions.","Je change de sujet pour parler de ses devoirs."],ok:1,e:"Son intérêt est une porte d'entrée pour créer la relation."},
+ {q:"Tu trouves des chips et des sodas dans sa chambre.",o:["Je jette tout sans le prévenir.","Je ne dis rien, c'est sa chambre.","J'explique la règle d'hygiène et je propose une collation à heure fixe."],ok:2,e:"On explique pourquoi la règle existe, et on propose une solution."},
+ {q:"Paul refuse de prendre sa douche.",o:["Je cherche avec lui un moment qui lui convient et je laisse ses produits à disposition.","Je l'oblige tout de suite.","Je préviens le lycée."],ok:0,e:"On négocie, on respecte son rythme : c'est la bientraitance."}
+];
+const PAIRS=[
+ ["Manque de sommeil","Console rendue le soir, règles décidées avec lui"],
+ ["Décrochage scolaire","Temps de devoirs accompagné et lien avec le lycée"],
+ ["Isolement","Tournoi de jeux vidéo dans la salle commune"],
+ ["Alimentation déséquilibrée","Atelier cuisine et collation à heure fixe"],
+ ["Rejet à cause de l'hygiène","Planning de douche choisi avec lui"],
+ ["Dangers sur internet","Charte numérique et discussion en confiance"]
+];
+const PUZZLES=[
+ {t:"Le besoin d'être propre",p:[
+  ["Théorie","Le besoin d'être propre fait partie des 14 besoins fondamentaux de Virginia Henderson."],
+  ["Situation","Paul a des problèmes d'hygiène et porte des vêtements sales."],
+  ["Action","Je lui propose, en privé, de choisir avec moi un moment pour sa douche et je lui montre le lave-linge."],
+  ["Exemple","En stage, j'ai appris à un jeune à trier son linge : au bout de trois semaines, il le faisait seul."],
+  ["Pourquoi","Ainsi, il gagne en autonomie et garde une bonne image auprès des autres."]]},
+ {t:"Le besoin de dormir",p:[
+  ["Théorie","Dormir et se reposer est un besoin physiologique, à la base de la pyramide de Maslow."],
+  ["Situation","Paul joue tard la nuit et arrive fatigué et en retard au lycée."],
+  ["Action","Avec l'équipe et avec lui, nous fixons une heure pour rendre la console le soir."],
+  ["Exemple","En stage, une règle décidée avec un jeune était mieux respectée qu'une règle imposée."],
+  ["Pourquoi","Il retrouve un rythme régulier, ce qui l'aide à se concentrer en cours."]]}
+];
+const FLASH=[
+ ["Besoins fondamentaux","Virginia Henderson : 14 besoins. Par exemple : manger, dormir, être propre, se vêtir, communiquer, apprendre, se recréer."],
+ ["Pyramide de Maslow","5 niveaux : physiologique, sécurité, appartenance, estime, accomplissement."],
+ ["Autonomie","Capacité à faire ses propres choix."],
+ ["Indépendance","Capacité à faire seul les gestes du quotidien."],
+ ["Bientraitance","Mettre la personne au centre : respecter ses droits, son rythme, ses choix."],
+ ["MECS","Maison d'enfants à caractère social. Accueille des jeunes confiés par l'Aide sociale à l'enfance."],
+ ["Placement administratif","Avec l'accord ou à la demande des parents, via l'Aide sociale à l'enfance."],
+ ["Placement judiciaire","Décidé par le juge des enfants quand l'enfant est en danger."],
+ ["Projet pour l'enfant (PPE)","Document qui fixe les objectifs de l'accompagnement, avec le jeune et ses parents."],
+ ["Transmissions","Écrites ou orales. Elles assurent la continuité de l'accompagnement."],
+ ["Équipe pluridisciplinaire","Des métiers différents qui travaillent ensemble pour le même jeune."],
+ ["Discrétion professionnelle","Partager seulement les informations utiles, et seulement avec l'équipe."],
+ ["Prévention","Agir avant que le risque n'arrive : observer, informer, alerter."],
+ ["Décrochage scolaire","Désengagement progressif : retards, absences, travail non fait."],
+ ["Information préoccupante","Alerte envoyée au département quand un mineur est en danger. L'AES prévient d'abord son chef de service."]
+];
+const DEFIS={
+ "Sommeil":{n:"Le sommeil est un besoin physiologique (Maslow, Henderson).",a:"On fixe avec Paul une heure pour rendre la console.",p:"Il retrouve un rythme et se concentre mieux en cours."},
+ "Repas":{n:"Manger et boire est un besoin fondamental (Henderson).",a:"Paul participe au choix d'un menu et à un atelier cuisine.",p:"Il apprend à cuisiner équilibré et partage un moment avec le groupe."},
+ "Amis":{n:"Le besoin d'appartenance (Maslow).",a:"J'organise un tournoi de jeux vidéo dans la salle commune.",p:"Son intérêt devient un moyen de créer des liens."},
+ "École":{n:"Apprendre est un besoin fondamental (Henderson).",a:"Je propose un temps de devoirs accompagné chaque soir.",p:"Il reprend confiance et on évite le décrochage."},
+ "Hygiène":{n:"Être propre et protéger ses téguments (Henderson).",a:"On choisit ensemble un moment pour la douche.",p:"Il garde son autonomie et une bonne image auprès des autres."}
+};
+
+const T1="Tu es AES dans une unité de vie d'une MECS, dans une grande ville. L'équipe : deux AES, une éducatrice spécialisée, un moniteur éducateur, un surveillant de nuit, une psychologue et un chef de service. Le groupe accueille 7 adolescents de 15 à 17 ans.";
+const T2="Paul, 16 ans, est accueilli en placement administratif depuis un mois. Avant, il vivait seul avec sa mère. Elle a demandé de l'aide car elle était débordée : Paul s'isolait dans sa chambre pour jouer aux jeux vidéo, il était irritable et ne respectait pas les horaires.";
+const T3="Paul rentre chez sa mère tous les week-ends. Il est en seconde dans un lycée de la ville. Il y va seul en métro. Au collège, il était sérieux et assidu. Depuis la seconde, sa mère voit qu'il se désinvestit et elle a peur qu'il décroche.";
+const T4="Les professeurs du lycée remarquent que Paul arrive souvent en retard le matin. Il ne fait pas son travail, regarde son téléphone en cours et il est fatigué : il n'arrive pas à se concentrer.";
+const T5="À la MECS, Paul ne cherche pas à s'intégrer. Il n'a pas d'ami dans le groupe. Il évite les professionnels : il dit qu'il n'a pas besoin d'eux et qu'il se débrouille seul. Il joue de plus en plus aux jeux vidéo dans sa chambre et oublie l'heure des repas. Il arrive en retard, picore, et ne parle que si on lui pose une question.";
+const T6="Les professionnels voient aussi que Paul ne prend pas soin de lui : problèmes d'hygiène, vêtements sales et abîmés. Il grignote souvent des chips et des gâteaux avec des sodas dans sa chambre. Le surveillant de nuit dit que Paul joue tard la nuit.";
+const T7="Question 1 : analyser la situation et les besoins de Paul. Question 2 : adapter ton accompagnement. Question 3 : développer son autonomie en respectant l'hygiène et la sécurité. Question 4 : repérer les risques et dire comment les prévenir.";
+const COMPR=[
+ {lbl:"Extrait 1 sur 7",ctx:T1,q:"Où travailles-tu ?",o:["Dans un lycée","Dans une MECS","Dans un EHPAD"],okList:["Dans une MECS"],e:"Une MECS : maison d'enfants à caractère social."},
+ {lbl:"Extrait 1 sur 7",ctx:T1,q:"Combien de jeunes vivent dans le groupe ?",o:["5","7","16"],okList:["7"],e:"7 adolescents de 15 à 17 ans."},
+ {lbl:"Extrait 1 sur 7",ctx:T1,q:"Quel professionnel n'est PAS dans l'équipe ?",o:["Le surveillant de nuit","La psychologue","L'infirmière"],okList:["L'infirmière"],e:"Il n'y a pas d'infirmière. Retiens bien qui est dans l'équipe : tu pourras citer ces collègues dans ta copie."},
+ {lbl:"Extrait 2 sur 7",ctx:T2,q:"Depuis combien de temps Paul est-il à la MECS ?",o:["Une semaine","Un mois","Un an"],okList:["Un mois"],e:"Un mois seulement : il est encore en période d'adaptation."},
+ {lbl:"Extrait 2 sur 7",ctx:T2,q:"Qui a demandé de l'aide ?",o:["Le lycée","Le juge","Sa mère"],okList:["Sa mère"],e:"C'est sa mère. C'est pour ça que le placement est administratif, et pas judiciaire."},
+ {lbl:"Extrait 2 sur 7",ctx:T2,q:"Pourquoi sa mère était-elle débordée ?",o:["Paul ne respectait pas les horaires et s'isolait","Paul avait de mauvaises notes","Paul fuguait"],okList:["Paul ne respectait pas les horaires et s'isolait"],e:"Isolement, irritabilité, horaires non respectés. Le texte ne parle pas de fugue."},
+ {lbl:"Extrait 3 sur 7",ctx:T3,q:"Quand Paul voit-il sa mère ?",o:["Le mercredi","Tous les week-ends","Pendant les vacances seulement"],okList:["Tous les week-ends"],e:"Le lien familial est maintenu chaque semaine."},
+ {lbl:"Extrait 3 sur 7",ctx:T3,q:"Comment Paul va-t-il au lycée ?",o:["Seul en métro","Avec un éducateur","En bus avec les autres jeunes"],okList:["Seul en métro"],e:"Il se déplace seul : c'est un point d'appui."},
+ {lbl:"Extrait 3 sur 7",ctx:T3,q:"De quoi sa mère a-t-elle peur ?",o:["Qu'il redouble","Qu'il décroche de l'école","Qu'il change de lycée"],okList:["Qu'il décroche de l'école"],e:"Elle redoute un début de décrochage scolaire."},
+ {lbl:"Extrait 4 sur 7",ctx:T4,q:"Qui a remarqué ces difficultés ?",o:["Les professeurs du lycée","Sa mère","Le surveillant de nuit"],okList:["Les professeurs du lycée"],e:"L'équipe enseignante. C'est une source d'information à prendre en compte."},
+ {lbl:"Extrait 4 sur 7",ctx:T4,q:"Lire entre les lignes : pourquoi Paul est-il fatigué en cours ?",o:["Il est malade","Il joue tard la nuit","Il fait trop de sport"],okList:["Il joue tard la nuit"],e:"Le texte le dit plus loin : le surveillant de nuit le voit jouer tard. Relier deux informations, c'est analyser."},
+ {lbl:"Extrait 5 sur 7",ctx:T5,q:"Que dit Paul aux professionnels ?",o:["Qu'il veut rentrer chez lui","Qu'il se débrouille seul","Qu'il s'ennuie"],okList:["Qu'il se débrouille seul"],e:"Il dit qu'il n'a pas besoin d'eux. La confiance est à construire."},
+ {lbl:"Extrait 5 sur 7",ctx:T5,q:"Quand Paul participe-t-il aux échanges ?",o:["Jamais","Quand on le sollicite","Seulement avec sa mère"],okList:["Quand on le sollicite"],e:"Il répond si on va vers lui : c'est une piste pour l'AES."},
+ {lbl:"Extrait 5 sur 7",ctx:T5,q:"Que veut dire « il picore » ?",o:["Il mange un peu de tout, sans vrai repas","Il mange très vite","Il refuse de manger"],okList:["Il mange un peu de tout, sans vrai repas"],e:"Il grignote au lieu de prendre un repas complet."},
+ {lbl:"Extrait 6 sur 7",ctx:T6,q:"Qui a vu que Paul joue tard la nuit ?",o:["La psychologue","Le chef de service","Le surveillant de nuit"],okList:["Le surveillant de nuit"],e:"C'est grâce aux transmissions entre collègues que l'équipe le sait."},
+ {lbl:"Extrait 6 sur 7",ctx:T6,q:"Qu'est-ce que Paul grignote dans sa chambre ?",o:["Des fruits","Des chips, des gâteaux et des sodas","Des sandwichs"],okList:["Des chips, des gâteaux et des sodas"],e:"Une alimentation trop grasse et trop sucrée."},
+ {lbl:"Extrait 7 sur 7 · Les consignes",ctx:T7,q:"Combien de questions dois-tu traiter ?",o:["2","3","4"],okList:["4"],e:"Il faut répondre aux quatre questions."},
+ {lbl:"Extrait 7 sur 7 · Les consignes",ctx:T7,q:"Quelle question parle des risques ?",o:["La question 1","La question 3","La question 4"],okList:["La question 4"],e:"Question 4 : les risques et comment les prévenir."},
+ {lbl:"Extrait 7 sur 7 · Les consignes",ctx:T7,q:"Que veut dire « analyser la situation » ?",o:["Raconter l'histoire de Paul","Comprendre ce qui se passe et trouver ses besoins","Donner une punition"],okList:["Comprendre ce qui se passe et trouver ses besoins"],e:"Analyser, ce n'est pas recopier le texte : c'est expliquer et relier les informations."},
+ {lbl:"Extrait 7 sur 7 · Les consignes",ctx:T7,q:"La question 3 te demande de parler de quoi, en plus de l'autonomie ?",o:["De l'hygiène et de la sécurité","De la famille","Des notes de Paul"],okList:["De l'hygiène et de la sécurité"],e:"Bien lire chaque mot de la consigne : ici, hygiène ET sécurité."}
+];
+
+/* ========== ACTIVITÉS ========== */
+const ACTS=[
+ {id:"compr",name:"Je lis le sujet",time:"5 min",desc:"Le texte en petits morceaux, avec des questions pour vérifier que tu as compris.",run:el=>runner(el,"compr",COMPR,false)},
+ {id:"tri",name:"Le détective",time:"5 min",desc:"Lis un indice sur Paul et trouve de quel besoin il parle.",run:el=>runner(el,"tri",shuffle(INDICES).map(x=>({q:x.q,o:CATS,okList:x.ok,e:x.e})),true)},
+ {id:"vf",name:"Vrai ou faux",time:"3 min",desc:"Les règles de l'épreuve et les notions, en mode éclair.",run:el=>runner(el,"vf",shuffle(VF).map(x=>({q:x.q,o:["Vrai","Faux"],okList:[x.ok],e:x.e})),true)},
+ {id:"geste",name:"Le bon geste",time:"3 min",desc:"Une situation, trois réactions. Laquelle est professionnelle ?",run:el=>runner(el,"geste",shuffle(GESTES).map(x=>({q:x.q,o:x.o,okList:[x.o[x.ok]],e:x.e})),false)},
+ {id:"relie",name:"Relie les paires",time:"3 min",desc:"Associe chaque risque pour Paul à sa prévention.",run:relie},
+ {id:"puzzle",name:"Le puzzle de paragraphe",time:"4 min",desc:"Remets les phrases dans l'ordre pour construire une bonne réponse.",run:puzzle},
+ {id:"flash",name:"Cartes notions",time:"4 min",desc:"Un mot, tu dis la définition, tu retournes la carte.",run:flash},
+ {id:"defi",name:"Mini-défi écrit",time:"5 min",desc:"Trois phrases courtes seulement : une notion, une action, pourquoi.",run:defi}
+];
+
+function renderHome(){
+  const s=getStars();const tot=Object.values(s).reduce((a,b)=>a+b,0);
+  document.getElementById('totalStars').textContent='★ '+tot+' / '+ACTS.length*3;
+  document.getElementById('tiles').innerHTML=ACTS.map(a=>`<button class="tile" data-id="${a.id}"><div class="meta"><span>${a.time}</span><span class="stars">${starStr(s[a.id]||0)}</span></div><h3>${a.name}</h3><p>${a.desc}</p></button>`).join('');
+  document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>open(t.dataset.id)));
+}
+const home=document.getElementById('home'),stage=document.getElementById('stage');
+function open(id){const a=ACTS.find(x=>x.id===id);home.hidden=true;stage.hidden=false;
+  stage.innerHTML=`<div class="act"><button class="back" id="backBtn">← Toutes les activités</button><h2>${a.name}</h2><div id="actBody" class="act" style="padding:0"></div></div>`;
+  document.getElementById('backBtn').addEventListener('click',goHome);a.run(document.getElementById('actBody'));window.scrollTo(0,0)}
+function goHome(){try{speechSynthesis.cancel()}catch(e){}stage.hidden=true;home.hidden=false;renderHome();window.scrollTo(0,0)}
+
+function endScreen(el,id,score,n,extra,replay){
+  const st=starsFor(score/n);saveStars(id,st);
+  el.innerHTML=`<div class="card"><p class="end-stars" aria-label="${st} étoiles sur 3">${starStr(st)}</p><p class="big-score">${score} / ${n}</p><p>${st===3?"Bravo, c'est maîtrisé !":st===2?"Bien joué ! Encore une partie pour les 3 étoiles ?":"C'est un début. Rejoue, ça rentre à force de répéter."}</p>${extra||''}<div class="row"><button class="go" id="again">Rejouer</button><button class="ghost" id="toHome">Autre activité</button></div></div>`;
+  el.querySelector('#again').addEventListener('click',replay);el.querySelector('#toHome').addEventListener('click',goHome);
+}
+
+/* Moteur de questions, une à la fois */
+function runner(el,id,items,two){
+  let i=0,score=0;const missed=[];
+  function show(){
+    if(i>=items.length){
+      const extra=missed.length?`<div><h3>À revoir</h3><ul class="clean">${missed.map(m=>`<li>${m}</li>`).join('')}</ul></div>`:'';
+      return endScreen(el,id,score,items.length,extra,()=>ACTS.find(a=>a.id===id).run(el));
+    }
+    const it=items[i];
+    el.innerHTML=`<div class="row" style="justify-content:space-between"><span class="muted">${i+1} sur ${items.length}</span><span class="stars">${score} bonne${score>1?'s':''} réponse${score>1?'s':''}</span></div>
+    <div class="bar"><span style="width:${i/items.length*100}%"></span></div>
+    <div class="card">${it.ctx?`<div class="ctx"><div class="row" style="justify-content:space-between"><span class="eyebrow">${it.lbl||'Le texte'}</span>${canSpeak?'<button class="say" data-sayctx>Écouter le texte</button>':''}</div><p class="ctxt">${it.ctx}</p></div>`:''}<div class="qhead"><p class="qt">${it.q}</p>${sayBtn()}</div>
+    <div class="opts ${two?'two':''}">${it.o.map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')}</div>
+    <p class="fb" hidden></p><button class="go" id="next" hidden>${i+1<items.length?'Suivant →':'Voir mon score'}</button></div>`;
+    wireSay(el);
+    el.querySelectorAll('[data-sayctx]').forEach(b=>b.addEventListener('click',()=>speak(el.querySelector('.ctxt').textContent)));
+    el.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+      const val=it.o[+b.dataset.j],good=it.okList.includes(val);if(good)score++;else missed.push(it.q);
+      el.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(it.okList.includes(it.o[+x.dataset.j]))x.classList.add('good')});
+      if(!good)b.classList.add('bad');
+      const fb=el.querySelector('.fb');fb.hidden=false;fb.className='fb '+(good?'ok':'ko');
+      fb.textContent=(good?'Bien vu ! ':'Pas tout à fait. ')+(it.okList.length>1&&id==='tri'?'Réponses possibles : '+it.okList.join(' ou ')+'. ':'')+it.e;
+      const n=el.querySelector('#next');n.hidden=false;n.focus();
+    }));
+    el.querySelector('#next').addEventListener('click',()=>{i++;show()});
+  }
+  show();
+}
+
+/* Relier */
+function relie(el){
+  const left=shuffle(PAIRS.map((p,i)=>({t:p[0],i}))),right=shuffle(PAIRS.map((p,i)=>({t:p[1],i})));
+  let sel=null,errors=0,done=0;
+  el.innerHTML=`<p class="muted">Touche un risque à gauche, puis la bonne prévention à droite.</p>
+  <div class="match"><div class="col">${left.map(x=>`<button class="mt" data-side="L" data-i="${x.i}">${x.t}</button>`).join('')}</div>
+  <div class="col">${right.map(x=>`<button class="mt" data-side="R" data-i="${x.i}">${x.t}</button>`).join('')}</div></div>
+  <p class="muted" id="rmsg" aria-live="polite">Erreurs : 0</p>`;
+  el.querySelectorAll('.mt').forEach(b=>b.addEventListener('click',()=>{
+    if(b.classList.contains('done'))return;
+    if(!sel||sel.dataset.side===b.dataset.side){el.querySelectorAll('.mt.sel').forEach(x=>x.classList.remove('sel'));sel=b;b.classList.add('sel');return}
+    if(sel.dataset.i===b.dataset.i){[sel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('done');x.disabled=true});done++;sel=null;
+      if(done===PAIRS.length){const sc=Math.max(0,PAIRS.length-errors);setTimeout(()=>endScreen(el,'relie',sc,PAIRS.length,'<p class="muted">Ces paires t\'aident pour la question 4 : chaque risque repéré doit avoir une action de prévention.</p>',()=>relie(el)),500)}}
+    else{errors++;const a=sel;[a,b].forEach(x=>x.classList.add('wrong'));setTimeout(()=>[a,b].forEach(x=>x.classList.remove('wrong','sel')),600);sel=null}
+    el.querySelector('#rmsg').textContent='Erreurs : '+errors;
+  }));
+}
+
+/* Puzzle */
+function puzzle(el,k=0,total=0,errors=0){
+  const P=PUZZLES[k];let step=0,err=0;
+  const pieces=shuffle(P.p.map((p,i)=>({lbl:p[0],t:p[1],i})));
+  function draw(){
+    el.innerHTML=`<p class="muted">Puzzle ${k+1} sur ${PUZZLES.length} · ${P.t}. Touche les phrases dans le bon ordre.</p>
+    <div class="formula" aria-label="La formule d'un bon paragraphe">${P.p.map(p=>`<span>${p[0]}</span>`).join('')}</div>
+    <div class="built">${P.p.slice(0,step).map(p=>`<div class="placed"><span class="lbl">${p[0]}</span>${p[1]}</div>`).join('')}</div>
+    <div class="pieces">${pieces.filter(x=>x.i>=step).map(x=>`<button class="piece" data-i="${x.i}">${x.t}</button>`).join('')}</div>
+    <p class="fb ko" id="pmsg" hidden></p>`;
+    el.querySelectorAll('.piece').forEach(b=>b.addEventListener('click',()=>{
+      if(+b.dataset.i===step){step++;if(step===P.p.length)return finish();draw()}
+      else{err++;const m=el.querySelector('#pmsg');m.hidden=false;m.textContent='Pas encore. Il faut maintenant : '+P.p[step][0]+'.'}
+    }));
+  }
+  function finish(){
+    el.innerHTML=`<div class="card"><h3>Paragraphe complet</h3>${P.p.map(p=>`<p><span class="hl">${p[0]}</span> ${p[1]}</p>`).join('')}<p class="muted">Retiens la formule : Théorie → Situation → Action → Exemple → Pourquoi. Elle marche pour chaque idée de ta copie.</p><button class="go" id="pnext">${k+1<PUZZLES.length?'Puzzle suivant →':'Voir mon score'}</button></div>`;
+    el.querySelector('#pnext').addEventListener('click',()=>{
+      const t=total+P.p.length,e=errors+err;
+      if(k+1<PUZZLES.length)puzzle(el,k+1,t,e);
+      else endScreen(el,'puzzle',Math.max(0,t-e),t,'',()=>puzzle(el));
+    });
+  }
+  draw();
+}
+
+/* Flashcards */
+function flash(el){
+  const cards=shuffle(FLASH);let i=0,known=0;const review=[];
+  function show(){
+    if(i>=cards.length)return endScreen(el,'flash',known,cards.length,review.length?`<div><h3>À revoir</h3><ul class="clean">${review.map(r=>`<li><strong>${r[0]}</strong> : ${r[1]}</li>`).join('')}</ul></div>`:'',()=>flash(el));
+    const c=cards[i];
+    el.innerHTML=`<div class="row" style="justify-content:space-between"><span class="muted">Carte ${i+1} sur ${cards.length}</span><span class="stars">${known} sue${known>1?'s':''}</span></div>
+    <div class="bar"><span style="width:${i/cards.length*100}%"></span></div>
+    <div class="card"><div class="qhead"><span class="term">${c[0]}</span>${sayBtn()}</div><p class="muted" id="hint">Dis la définition dans ta tête ou à voix haute.</p><p id="def" hidden>${c[1]}</p>
+    <button class="go" id="flip">Retourner la carte</button>
+    <div class="row" id="rate" hidden><button class="go" id="yes">Je savais</button><button class="ghost" id="no">À revoir</button></div></div>`;
+    wireSay(el);
+    el.querySelector('#flip').addEventListener('click',()=>{el.querySelector('#def').hidden=false;el.querySelector('#hint').hidden=true;el.querySelector('#flip').hidden=true;el.querySelector('#rate').hidden=false;if(canSpeak)0});
+    el.querySelector('#yes').addEventListener('click',()=>{known++;i++;show()});
+    el.querySelector('#no').addEventListener('click',()=>{review.push(c);i++;show()});
+  }
+  show();
+}
+
+/* Mini-défi */
+function defi(el){
+  let theme=Object.keys(DEFIS)[0],iv=null,left=300;
+  function draw(){
+    el.innerHTML=`<p class="muted">Choisis un thème. Écris 3 phrases courtes, une par case. Pas besoin de belles phrases : ce sont tes idées qui comptent.</p>
+    <div class="chips" role="group" aria-label="Thème">${Object.keys(DEFIS).map(t=>`<button class="chip" aria-pressed="${t===theme}" data-t="${t}">${t}</button>`).join('')}</div>
+    <div class="card"><div class="row" style="justify-content:space-between"><span class="timer" id="tm">5:00</span><button class="ghost" id="tgo">Lancer 5 minutes</button></div>
+    <div class="field"><label for="f1">1. Une notion (un auteur, un besoin, une définition)</label><textarea id="f1"></textarea></div>
+    <div class="field"><label for="f2">2. Une action concrète pour Paul</label><textarea id="f2"></textarea></div>
+    <div class="field"><label for="f3">3. Pourquoi ? (ce que ça lui apporte)</label><textarea id="f3"></textarea></div>
+    <button class="go" id="show">Comparer avec un exemple</button>
+    <div id="model" hidden class="fb ok"></div></div>`;
+    el.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{theme=c.dataset.t;clearInterval(iv);iv=null;left=300;draw()}));
+    const tm=el.querySelector('#tm'),tg=el.querySelector('#tgo');
+    const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    tg.addEventListener('click',()=>{if(iv){clearInterval(iv);iv=null;tg.textContent='Reprendre';return}tg.textContent='Pause';iv=setInterval(()=>{left--;tm.textContent=left>0?fmt(left):'Terminé !';if(left<=0){clearInterval(iv);iv=null;tg.textContent='Relancer';left=300}},1000)});
+    el.querySelector('#show').addEventListener('click',()=>{const d=DEFIS[theme],m=el.querySelector('#model');m.hidden=false;
+      m.innerHTML=`<p><strong>Notion :</strong> ${d.n}</p><p><strong>Action :</strong> ${d.a}</p><p><strong>Pourquoi :</strong> ${d.p}</p><p style="margin-top:8px">Ta réponse peut être différente et juste. Vérifie juste que tu as bien les 3 morceaux.</p>`;
+      const filled=['f1','f2','f3'].filter(f=>el.querySelector('#'+f).value.trim().length>3).length;saveStars('defi',filled===3?3:filled===2?2:1);
+      const btn=el.querySelector('#show');btn.textContent='Autre thème ?';btn.onclick=()=>{const ks=Object.keys(DEFIS);theme=ks[(ks.indexOf(theme)+1)%ks.length];clearInterval(iv);iv=null;left=300;draw()};
+    });
+  }
+  draw();
+}
+
+renderHome();
+</script>
